@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# This file is part of the shareterm project
+# Copyright (C) 2011  Adrien LELONG
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#Start a shared terminal (using a screen session) on target PC
+#reverse tunnel is created and temporary private key is sent to server
+#to allow SSH connection as guest user
+
+SHARESERV=bank
+SSHKEYPATH=/tmp
+SSHKEYFILE=$SSHKEYPATH/k
+
+GUESTUSERNAME=guest
+GUESTUSERHOME=/home/$GUESTUSERNAME
+
+#Create and send the key
+sudo -u $GUESTUSERNAME ssh-keygen -P '' -f $SSHKEYFILE
+
+#Get available port from server
+cat $SSHKEYFILE|ssh $NETUSER@$SHARESERV createlink > /tmp/createlink.out
+source createlink.out
+
+#Open the tunnel
+ssh -NR$NEWPORT:localhost:22 $NETUSER@$SHARESERV
+
+
