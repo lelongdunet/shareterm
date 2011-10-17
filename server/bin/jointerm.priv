@@ -31,5 +31,5 @@ fi
 
 MSG="User $SUDO_USER"
 PORT=$($CAT $PORTFILE)
-$SSH -t -i $KEYFILE -p$PORT $GUESTUSERNAME@localhos
+$SSH -t -i $KEYFILE -p$PORT $GUESTUSERNAME@localhost $SUDO_USER
 
