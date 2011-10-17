@@ -19,16 +19,17 @@
 #Run on server as user shareterm (using sudo)
 #to start the SSH connection to target PC
 
-SSH=/usr/bin/ssh
-CAT=/bin/cat
+echo "Connected user : $1"
+#TARGET_USER=$(cat -)
+TARGET_USER=$1
+source /usr/share/shareterm/server.setenv.bash
 
-SHARETERMDIR=/home/ad/shareterm
-KEYDIR=$SHARETERMDIR/$USER
-KEYFILE=$KEYDIR/k
-PORTFILE=$KEYDIR/port
-GUESTUSERNAME=guest
+if [ ! -f $KEYFILE ]; then
+    echo "No existing session for user $TARGET_USER"
+    exit 1
+fi
 
 MSG="User $SUDO_USER"
 PORT=$($CAT $PORTFILE)
-$SSH -i $KEYFILE -p$PORT $GUESTUSERNAME@localhost #Add argument
+$SSH -t -i $KEYFILE -p$PORT $GUESTUSERNAME@localhos
 

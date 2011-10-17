@@ -16,3 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+SHARETERMCFG=$HOME/.shareterm
+if [ ! -f $SHARETERMCFG ]; then
+    echo "You must set copnfiguration in $SHARETERMCFG"
+    exit 1;
+fi
+
+SSHPORT=''
+source $SHARETERMCFG
+
+if [ -z $SSHPORT ]; then
+    SSH="ssh"
+else
+    SSH="ssh -p$SSHPORT"
+fi
+
+TARGET_USER=$1
+echo "Connecting to $TARGET_USER's tarminal"
+$SSH -t $NETUSER@$SHARESERV sudo -u shareterm /usr/share/shareterm/jointerm.priv $TARGET_USER
+
