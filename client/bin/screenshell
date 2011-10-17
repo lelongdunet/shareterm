@@ -16,26 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#Install script on target PC
 
-GUESTUSERNAME=guest
-
-chmod u+s /usr/bin/screen
-chmod 755 /var/run/screen
-
-if ! grep $GUESTUSERNAME /etc/passwd; then
-    useradd -m -s /usr/bin/screenshell $GUESTUSERNAME
+SSFILE=$SSHKEYPATH/ss.shareterm
+if [ ! -f $SSFILE ]; then
+    echo 'No shareterm session running!'
+    exit 1
 fi
 
-mkdir /var/lib/shareterm
-{
-    echo "multiuser on"
-    echo "addacl $GUESTUSERNAME"
-} > /var/lib/shareterm/screenmu
-
-if ! grep $GUESTUSERNAME /etc/sudoers; then
-    echo 'ALL ALL=('$GUESTUSERNAME') NOPASSWD: ALL' >> /etc/sudoers
-fi
-
-cp bin/* /usr/bin/
+TARGET_USER=$(cat $SSFILE)
+echo "User $2 connecting to shareterm, PID:$$"|wall
+screen -x $TARGET_USER/share
 

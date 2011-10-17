@@ -39,17 +39,23 @@ SCREENCFG=/var/lib/shareterm/screenmu
 #SCREENCFG=/var/lib/shareterm/screenmu
 SSHKEYPATH=/tmp
 SSHKEYFILE=$SSHKEYPATH/k.shareterm
+SSFILE=$SSHKEYPATH/ss.shareterm
 
 #GUESTUSERNAME=guest
 GUESTUSERNAME=user
 GUESTUSERHOME=/home/$GUESTUSERNAME
 
-#Create and send the key
+if [ -f $SSFILE ]; then
+    echo 'Shareterm session already running!'
+    exit 1
+fi
+
 if screen -ls|egrep '[0-9]+\.share'; then
     echo 'Screen session "share" already running!'
     exit 1
 fi
 
+#Create and send the key
 ssh-keygen -P '' -f $SSHKEYFILE
 sudo -u $GUESTUSERNAME mkdir -p $GUESTUSERHOME/.ssh
 sudo -u $GUESTUSERNAME cp $SSHKEYFILE.pub $GUESTUSERHOME/.ssh/authorized_keys
@@ -68,6 +74,7 @@ $SSH -NR$NEWPORT:localhost:22 $NETUSER@$SHARESERV &
 SSHPID=$!
 
 
+echo $USER > $SSFILE
 screen -S share -c $SCREENCFG
 
 #Exited from screen
@@ -81,5 +88,5 @@ echo 'Closing shared terminal'
 sleep 1
 kill $SSHPID
 rm -f $SSHKEYFILE*
-
+rm -f $SSFILE
 
