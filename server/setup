@@ -18,8 +18,31 @@
 
 #Install script on server
 
-useradd shareterm
-mkdir /var/run/shareterm
-chown shareterm /var/run/shareterm
+SHARETERMBIN=/usr/share/shareterm
+SHARETERMRUN=/var/run/shareterm
 
+if grep shareterm /etc/groups; then
+    echo 'Shareterm seems to be already installed'
+    exit 1
+fi
+
+groupadd shareterm
+if ! grep shareterm /etc/passwd; then
+    useradd shareterm -s /bin/bash -g shareterm
+fi
+
+mkdir $SHARETERMRUN
+chown shareterm $SHARETERMRUN
+mkdir $SHARETERMBIN
+
+cp bin/createlink $SHARETERMBIN
+cp bin/jointerm.priv $SHARETERMBIN
+cp bin/server.setenv.bash $SHARETERMBIN
+
+chown -R shareterm $SHARETERMBIN
+chmod 700 $SHARETERMBIN
+
+if ! grep shareterm /etc/sudoers; then
+    echo '%shareterm ALL=(shareterm) NOPASSWD: ALL' >> /etc/sudoers
+fi
 
