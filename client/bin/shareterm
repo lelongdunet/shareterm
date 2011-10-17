@@ -20,21 +20,66 @@
 #reverse tunnel is created and temporary private key is sent to server
 #to allow SSH connection as guest user
 
-SHARESERV=bank
-SSHKEYPATH=/tmp
-SSHKEYFILE=$SSHKEYPATH/k
+SHARETERMCFG=$HOME/.shareterm
+if [ ! -f $SHARETERMCFG ]; then
+    echo "You must set copnfiguration in $SHARETERMCFG"
+    exit 1;
+fi
 
-GUESTUSERNAME=guest
+SSHPORT=''
+source $SHARETERMCFG
+
+if [ -z $SSHPORT ]; then
+    SSH="ssh"
+else
+    SSH="ssh -p$SSHPORT"
+fi
+
+SCREENCFG=/var/lib/shareterm/screenmu
+#SCREENCFG=/var/lib/shareterm/screenmu
+SSHKEYPATH=/tmp
+SSHKEYFILE=$SSHKEYPATH/k.shareterm
+
+#GUESTUSERNAME=guest
+GUESTUSERNAME=user
 GUESTUSERHOME=/home/$GUESTUSERNAME
 
 #Create and send the key
-sudo -u $GUESTUSERNAME ssh-keygen -P '' -f $SSHKEYFILE
+if screen -ls|egrep '[0-9]+\.share'; then
+    echo 'Screen session "share" already running!'
+    exit 1
+fi
+
+ssh-keygen -P '' -f $SSHKEYFILE
+sudo -u $GUESTUSERNAME mkdir -p $GUESTUSERHOME/.ssh
+sudo -u $GUESTUSERNAME cp $SSHKEYFILE.pub $GUESTUSERHOME/.ssh/authorized_keys
 
 #Get available port from server
-cat $SSHKEYFILE|ssh $NETUSER@$SHARESERV createlink > /tmp/createlink.out
-source createlink.out
+cat $SSHKEYFILE|$SSH $NETUSER@$SHARESERV sudo -u shareterm /usr/share/shareterm/createlink > /tmp/createlink.out
+if ! grep NEWPORT /tmp/createlink.out; then
+    echo "Error while creating connection"
+    exit 2
+fi
+
+source /tmp/createlink.out
 
 #Open the tunnel
-ssh -NR$NEWPORT:localhost:22 $NETUSER@$SHARESERV
+$SSH -NR$NEWPORT:localhost:22 $NETUSER@$SHARESERV &
+SSHPID=$!
+
+
+screen -S share -c $SCREENCFG
+
+#Exited from screen
+#if screen -ls|egrep '[0-9]+\.share'; then
+#    read -p 'Are you sure you want to continue sharing this term? y/n'
+#    if [ "$REPLY" == "y" ]; then
+#        CLOSESHARE="N"
+#    fi
+#fi
+echo 'Closing shared terminal'
+sleep 1
+kill $SSHPID
+rm -f $SSHKEYFILE*
 
 

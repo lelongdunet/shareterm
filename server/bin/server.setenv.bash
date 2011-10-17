@@ -1,7 +1,5 @@
-#!/bin/bash
-
 # This file is part of the shareterm project
-# Copyright (C) 2011  Adrien LELONG
+# Copyright (C) 2011 Adrien LELONG
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,22 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#Run on server and is called by shareterm (from target PC)
-# using sudo, to get private and send available port
-#
-# > sudo -u shareterm /usr
+SSH=/usr/bin/ssh
+CAT=/bin/cat
+MKDIR=/bin/mkdir
+ECHO=/bin/echo
+CHMOD=/bin/chmod
 
-TARGET_USER=$SUDO_USER
-TARGET_UID=$SUDO_UID
-source /usr/share/shareterm/server.setenv.bash
+SHARETERMDIR=/var/run/shareterm
+#SHARETERMDIR=/home/ad/shareterm
+KEYDIR=$SHARETERMDIR/$TARGET_USER
+KEYFILE=$KEYDIR/k
+PORTFILE=$KEYDIR/port
 
-#Record private key
-$MKDIR -p $KEYDIR
-$CAT - > $KEYFILE
-$CHMOD 600 $KEYFILE
-
-NEWPORT=$((TARGET_UID+10000))
-#Send port
-$ECHO 'NEWPORT='$NEWPORT
-$ECHO $NEWPORT > $PORTFILE
+GUESTUSERNAME=guest
 
