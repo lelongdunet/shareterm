@@ -72,6 +72,20 @@ source /tmp/createlink.out
 $SSH -NR$NEWPORT:localhost:22 $NETUSER@$SHARESERV &
 SSHPID=$!
 
+#Test for SUID
+if ! ls -l /usr/bin/screen|egrep '^...s'; then
+    echo 'The screen executable is not SUID'
+    echo 'Please provide your password to allow shareterm to fix it...'
+    sudo chmod u+s /usr/bin/screen || exit 4
+    sudo chmod 755 /var/run/screen
+fi
+
+if ! ls -ld /var/run/screen|egrep '^drwxr-xr-x'; then
+    echo '/var/run/screen must have mode 755'
+    echo 'Please provide your password to allow shareterm to fix it...'
+    sudo chmod 755 /var/run/screen || exit 4
+fi
+
 
 echo $USER > $SSFILE
 screen -S share -c $SCREENCFG
