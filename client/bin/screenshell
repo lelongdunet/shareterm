@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+SSHKEYPATH=/tmp
 SSFILE=$SSHKEYPATH/ss.shareterm
 if [ ! -f $SSFILE ]; then
     echo 'No shareterm session running!'
