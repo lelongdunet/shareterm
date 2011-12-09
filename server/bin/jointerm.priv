@@ -31,5 +31,5 @@ fi
 
 MSG="User $SUDO_USER"
 PORT=$($CAT $PORTFILE)
-$SSH -t -o "StrictHostKeyChecking no" -i $KEYFILE -p$PORT $GUESTUSERNAME@localhost $SUDO_USER
+$SSH -t -o "StrictHostKeyChecking no" -i $KEYFILE -p$PORT $GUESTUSERNAME@127.0.0.1 $SUDO_USER
 
