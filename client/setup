@@ -27,7 +27,7 @@ if ! grep $GUESTUSERNAME /etc/passwd; then
     useradd -m -s /usr/bin/screenshell $GUESTUSERNAME
 fi
 
-mkdir /var/lib/shareterm
+mkdir -p /var/lib/shareterm
 {
     echo "multiuser on"
     echo "addacl $GUESTUSERNAME"
