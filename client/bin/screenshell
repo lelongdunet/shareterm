@@ -27,4 +27,5 @@ fi
 TARGET_USER=$(cat $SSFILE)
 echo "User $2 connecting to shareterm, PID:$$"|wall
 screen -x $TARGET_USER/share
+echo "User $2 leaving shareterm, PID:$$"|wall
 
