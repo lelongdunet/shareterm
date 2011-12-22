@@ -36,7 +36,6 @@ else
 fi
 
 SCREENCFG=/var/lib/shareterm/screenmu
-#SCREENCFG=/var/lib/shareterm/screenmu
 SSHKEYPATH=/tmp
 SSHKEYFILE=$SSHKEYPATH/k.shareterm
 SSFILE=$SSHKEYPATH/ss.shareterm
@@ -46,11 +45,6 @@ GUESTUSERHOME=/home/$GUESTUSERNAME
 
 if [ -f $SSFILE ]; then
     echo 'Shareterm session already running!'
-    exit 1
-fi
-
-if screen -ls|egrep '[0-9]+\.share'; then
-    echo 'Screen session "share" already running!'
     exit 1
 fi
 
@@ -88,15 +82,14 @@ fi
 
 
 echo $USER > $SSFILE
-screen -S share -c $SCREENCFG
+if screen -ls |egrep '^\s*[0-9]+\.share\b'>/tmp/screenss; then
+    echo "screen session already running, rejoin."
+    screen -x share
+else
+    echo "Open new screen session"
+    screen -S share -c $SCREENCFG
+fi
 
-#Exited from screen
-#if screen -ls|egrep '[0-9]+\.share'; then
-#    read -p 'Are you sure you want to continue sharing this term? y/n'
-#    if [ "$REPLY" == "y" ]; then
-#        CLOSESHARE="N"
-#    fi
-#fi
 echo 'Closing shared terminal'
 sleep 1
 kill $SSHPID
