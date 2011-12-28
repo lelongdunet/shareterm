@@ -1,0 +1,4 @@
+#!/bin/bash
+#git archive --format=tar --prefix=git-1.4.0/ v1.4.0 | gzip >git-1.4.0.tar.gz
+git archive --format=tar --prefix=shareterm- HEAD client/ | gzip >shareterm-client.tar.gz
+git archive --format=tar --prefix=shareterm- HEAD server/ | gzip >shareterm-server.tar.gz
