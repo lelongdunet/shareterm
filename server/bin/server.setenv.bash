@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# This script defines common settings for the shareterm server. It's
+# intended to be sourced in other server scripts
+
 SSH=/usr/bin/ssh
 CAT=/bin/cat
 MKDIR=/bin/mkdir

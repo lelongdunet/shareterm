@@ -1,0 +1,16 @@
+################################################################################
+#                                                                              #
+#                             Shareterm project                                #
+#                               Adrien LELONG                                  #
+#                                                                              #
+################################################################################
+
+
+Shareterm allows you to easily share a terminal on UNIX systems over a network.
+It require a central server with SSH accounts for each people wanting to use the
+system.
+
+DEPENDS (client side)
+---------------------
+screen openssh-server sudo 
+

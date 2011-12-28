@@ -62,11 +62,15 @@ fi
 
 source /tmp/createlink.out
 
-#Open the tunnel
+#Open the tunnel: TO BE CHANGED if other kind of tunnel are provided in the future
 $SSH -NR$NEWPORT:localhost:22 $NETUSER@$SHARESERV &
 SSHPID=$!
 
-#Test for SUID
+################################################################################
+# Start or resume the screen session
+################################################################################
+
+#Recheck for screen SUID first
 if ! ls -l /usr/bin/screen|egrep '^...s'; then
     echo 'The screen executable is not SUID'
     echo 'Please provide your password to allow shareterm to fix it...'
@@ -89,6 +93,10 @@ else
     echo "Open new screen session"
     screen -S share -c $SCREENCFG
 fi
+
+################################################################################
+# Close the tunnel
+################################################################################
 
 echo 'Closing shared terminal'
 sleep 1

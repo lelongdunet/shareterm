@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# This script is set as shell for the guest user PCs. Thus anyone connecting
+# as guest is into a jail allowing only to join the screen session.
 
 SSHKEYPATH=/tmp
 SSFILE=$SSHKEYPATH/ss.shareterm
