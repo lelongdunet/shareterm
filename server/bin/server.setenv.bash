@@ -17,17 +17,18 @@
 # This script defines common settings for the shareterm server. It's
 # intended to be sourced in other server scripts
 
-SSH=/usr/bin/ssh
-CAT=/bin/cat
-MKDIR=/bin/mkdir
-ECHO=/bin/echo
-CHMOD=/bin/chmod
+SSH="/usr/bin/ssh"
+CAT="/bin/cat"
+MKDIR="/bin/mkdir"
+ECHO="/bin/echo"
+CHMOD="/bin/chmod"
+GREP="/bin/grep"
 
-SHARETERMDIR=/var/run/shareterm
-#SHARETERMDIR=/home/ad/shareterm
-KEYDIR=$SHARETERMDIR/$TARGET_USER
-KEYFILE=$KEYDIR/k
-PORTFILE=$KEYDIR/port
+SHARETERMDIR="/var/run/shareterm"
+#SHARETERMDIR="/home/ad/shareterm"
+KEYDIR="$SHARETERMDIR/$TARGET_USER"
+KEYFILE="$KEYDIR/k"
+PORTFILE="$KEYDIR/port"
 
-GUESTUSERNAME=guest
+GUESTUSERNAME="guest"
 

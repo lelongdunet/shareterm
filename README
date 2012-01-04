@@ -14,3 +14,6 @@ DEPENDS (client side)
 ---------------------
 screen openssh-server sudo 
 
+(server side)
+-------------
+python sudo openssh-server

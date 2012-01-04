@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/python
 
 # This file is part of the shareterm project
 # Copyright (C) 2011  Adrien LELONG
@@ -21,17 +21,86 @@
 #
 # > sudo -u shareterm /usr
 
-TARGET_USER=$SUDO_USER
-TARGET_UID=$SUDO_UID
-source /usr/share/shareterm/server.setenv.bash
 
-#Record private key
-$MKDIR -p $KEYDIR
-$CAT - > $KEYFILE
-$CHMOD 600 $KEYFILE
+import re
+import sys
+import os
+import stat
 
-NEWPORT=$((TARGET_UID+10000))
-#Send port
-$ECHO 'NEWPORT='$NEWPORT
-$ECHO $NEWPORT > $PORTFILE
+class Config :
+    def repl(self, g):
+        return self.__dict__[g.group(1)]
+
+    def __init__(self, filename, defaults=[]):
+        #Initialise with default values
+        for name, value in defaults:
+            value=value.replace('"','')
+            setattr(self, name, value)
+        f = open(filename, 'r')
+        for name, value in re.findall(r'^\s*(\w*)\s*=\s*(\S*)\s*$', f.read(), re.MULTILINE):
+            value = value.replace('"','')
+            value = re.sub(r'\$(?P<var>\w*)', self.repl, value)
+            setattr(self, name, value)
+
+class TcpPortList(list):
+    def __init__(self):
+        tcpfile = open('/proc/net/tcp')
+        lines = tcpfile.readlines()
+        tcp6file = open('/proc/net/tcp6')
+        lines += tcp6file
+
+        for i in lines:
+            line = i.split()
+            local = line[1].split(':')
+            #if len(local) == 2 and re.match("^0*:0*$", line[2]):
+            if len(local) == 2:
+                self.append(int(local[1], 16))
+
+    def getFreePort(self, startVal):
+        while startVal in self:
+            startVal = startVal + 1
+        self.append(startVal)
+        return startVal
+
+def toFile(filename, text):
+    file = open(filename, 'w')
+    file.write(text)
+    file.close()
+
+targetUser = "none"
+targetUID = 0
+try:
+    targetUser = os.environ["SUDO_USER"]
+    targetUID = os.environ["SUDO_UID"]
+except:
+    print "The script must be called via sudo"
+    #exit(1)
+
+configFileName = 'server.setenv.bash'
+if not os.path.exists(configFileName):
+    configFileName = '/usr/share/shareterm/server.setenv.bash'
+if not os.path.exists(configFileName):
+    print 'Cannot find config file!'
+    exit(2)
+
+config = Config(configFileName, [("TARGET_USER", targetUser)])
+
+#Check KEYDIR directory is created
+if not os.path.exists(config.KEYDIR):
+    os.mkdir(config.KEYDIR)
+
+#Write private key
+keyFile = open(config.KEYFILE, 'w')
+keyFile.writelines(sys.stdin.readlines())
+keyFile.close()
+
+os.chmod(config.KEYFILE, stat.S_IRUSR | stat.S_IWUSR)
+
+tcpPortList = TcpPortList()
+startPort = int(targetUID) + 10000
+
+newPort = tcpPortList.getFreePort(startPort)
+
+toFile(config.PORTFILE, str(newPort))
+print "NEWPORT=" + str(newPort) + '\n'
 
