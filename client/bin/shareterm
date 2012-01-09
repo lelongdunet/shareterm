@@ -30,12 +30,11 @@ SSHPORT=''
 source $SHARETERMCFG
 
 if [ -z $SSHPORT ]; then
-    SSH="ssh"
-else
-    SSH="ssh -p$SSHPORT"
+    SSHPORT=22
 fi
 
-SCREENCFG=/var/lib/shareterm/screenmu
+LIBDIR='lib'
+SCREENCFG=$LIBDIR/screenmu
 SSHKEYPATH=/tmp
 SSHKEYFILE=$SSHKEYPATH/k.shareterm
 SSFILE=$SSHKEYPATH/ss.shareterm
@@ -54,18 +53,13 @@ ssh-keygen -P '' -f $SSHKEYFILE
 sudo -u $GUESTUSERNAME mkdir -p $GUESTUSERHOME/.ssh
 sudo -u $GUESTUSERNAME cp $SSHKEYFILE.pub $GUESTUSERHOME/.ssh/authorized_keys
 
-#Get available port from server
-cat $SSHKEYFILE|$SSH $NETUSER@$SHARESERV sudo -u shareterm /usr/share/shareterm/createlink > /tmp/createlink.out
-if ! grep NEWPORT /tmp/createlink.out; then
-    echo "Error while creating connection"
-    exit 2
-fi
-
+python $LIBDIR/access.py SHARESERV=$SHARESERV \
+    SSHPORT=$SSHPORT \
+    NETUSER=$NETUSER \
+    SSHKEYFILE=$SSHKEYFILE \
+    'COMMAND=sudo -u shareterm /usr/share/shareterm/createlink' > /tmp/createlink.out
 source /tmp/createlink.out
-
-#Open the tunnel: TO BE CHANGED if other kind of tunnel are provided in the future
-$SSH -NR$NEWPORT:localhost:22 $NETUSER@$SHARESERV &
-SSHPID=$!
+SSHPID=$CPID
 
 ################################################################################
 # Start or resume the screen session

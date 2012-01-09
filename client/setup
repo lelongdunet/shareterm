@@ -27,15 +27,17 @@ if ! grep $GUESTUSERNAME /etc/passwd; then
     useradd -m -s /usr/bin/screenshell $GUESTUSERNAME
 fi
 
-mkdir -p /var/lib/shareterm
-{
-    echo "multiuser on"
-    echo "addacl $GUESTUSERNAME"
-} > /var/lib/shareterm/screenmu
+LIBDIR=/var/lib/shareterm
+mkdir -p $LIBDIR
 
 if ! grep $GUESTUSERNAME /etc/sudoers; then
     echo 'ALL ALL=('$GUESTUSERNAME') NOPASSWD: ALL' >> /etc/sudoers
 fi
 
 cp bin/* /usr/bin/
+cp lib/* $LIBDIR/
+
+#Ensure LIBDIR path is correct
+cd /usr/bin/
+sed -i "s/^LIBDIR\s*=.*/LIBDIR='$LIBDIR'/" shareterm jointerm
 
