@@ -22,6 +22,7 @@
 echo "Connected user : $1"
 #TARGET_USER=$(cat -)
 TARGET_USER=$1
+OPT=$2
 source /usr/share/shareterm/server.setenv.bash
 
 if [ ! -f $KEYFILE ]; then
@@ -29,7 +30,12 @@ if [ ! -f $KEYFILE ]; then
     exit 1
 fi
 
+if [ "$OPT" == "--info" ]; then
+    cat $PORTFILE
+    exit
+fi
+
 MSG="User $SUDO_USER"
-PORT=$($CAT $PORTFILE)
-$SSH -t -o "StrictHostKeyChecking no" -i $KEYFILE -p$PORT $GUESTUSERNAME@127.0.0.1 $SUDO_USER
+source $PORTFILE
+$SSH -t -o "StrictHostKeyChecking no" -i $KEYFILE -p$NEWPORT $GUESTUSERNAME@127.0.0.1 $SUDO_USER
 

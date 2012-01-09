@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # This file is part of the shareterm project
 # Copyright (C) 2011  Adrien LELONG
@@ -62,8 +62,8 @@ class TcpPortList(list):
         self.append(startVal)
         return startVal
 
-def toFile(filename, text):
-    file = open(filename, 'w')
+def toFile(filename, text, mode='w'):
+    file = open(filename, mode)
     file.write(text)
     file.close()
 
@@ -100,7 +100,10 @@ tcpPortList = TcpPortList()
 startPort = int(targetUID) + 10000
 
 newPort = tcpPortList.getFreePort(startPort)
+newGPort = tcpPortList.getFreePort(startPort)
 
-toFile(config.PORTFILE, str(newPort))
+toFile(config.PORTFILE, 'NEWPORT=%i\n' % newPort)
+toFile(config.PORTFILE, 'NEWGPORT=%i\n' % newGPort, 'a')
 print "NEWPORT=" + str(newPort) + '\n'
+print "NEWGPORT=" + str(newGPort) + '\n'
 

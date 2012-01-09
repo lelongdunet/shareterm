@@ -39,5 +39,5 @@ cp lib/* $LIBDIR/
 
 #Ensure LIBDIR path is correct
 cd /usr/bin/
-sed -i "s/^LIBDIR\s*=.*/LIBDIR='$LIBDIR'/" shareterm jointerm
+sed -i "s#^LIBDIR\s*=.*#LIBDIR='$LIBDIR'#" shareterm jointerm
 
