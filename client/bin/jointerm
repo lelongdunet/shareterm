@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 
 # This file is part of the shareterm project
 # Copyright (C) 2011  Adrien LELONG
@@ -16,22 +16,59 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SHARETERMCFG=$HOME/.shareterm
-if [ ! -f $SHARETERMCFG ]; then
-    echo "You must set copnfiguration in $SHARETERMCFG"
-    exit 1;
-fi
+import os
+import sys
 
-SSHPORT=''
-source $SHARETERMCFG
+LIBDIR = '../lib'
+sys.path.insert(0, LIBDIR)
 
-if [ -z $SSHPORT ]; then
-    SSH="ssh"
-else
-    SSH="ssh -p$SSHPORT"
-fi
+import system
+import sshrichclient
+import paramiko
+import interactive
 
-TARGET_USER=$1
-echo "Connecting to $TARGET_USER's tarminal"
-$SSH -t $NETUSER@$SHARESERV sudo -u shareterm /usr/share/shareterm/jointerm.priv $TARGET_USER
+
+SHARETERMCFG = os.environ['HOME'] + '/.shareterm'
+TARGET_USER = sys.argv[1]
+command = 'sudo -u shareterm /usr/share/shareterm/jointerm.priv %s' % TARGET_USER
+
+try:
+    f = open(SHARETERMCFG)
+except:
+    print "You must set configuration in %s" % SHARETERMCFG
+    exit(1)
+
+config = system.Config(f.readlines())
+f.close()
+
+hostname = config.SHARESERV
+username = config.NETUSER
+password = ''
+if hasattr(config, 'SSHPORT'):
+    port = int(config.SSHPORT)
+else:
+    port = 22
+
+print "Connecting to %s's terminal" % TARGET_USER
+#Try to connect to the server
+try:
+    client = sshrichclient.SSHRichClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.WarningPolicy)
+    client.connect(hostname, port, username)
+except Exception, e:
+    print 'MSG="Can\'t connect to server : %s: %s"' % (e.__class__, e)
+    try:
+        client.close()
+    except:
+        pass
+    sys.exit(1)
+
+chan = client.get_transport().open_session()
+chan.get_pty()
+chan.exec_command(command)
+interactive.interactive_shell(chan)
+chan.close()
+
+client.close()
 
