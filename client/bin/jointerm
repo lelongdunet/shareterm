@@ -71,7 +71,7 @@ except Exception, e:
     sys.exit(1)
 
 chan = client.get_transport().open_session()
-chan.get_pty()
+chan.get_pty(**interactive.get_term_env())
 chan.exec_command(command)
 interactive.interactive_shell(chan)
 chan.close()

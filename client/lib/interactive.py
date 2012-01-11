@@ -19,6 +19,10 @@
 
 import socket
 import sys
+import os
+import array
+import fcntl
+import signal
 
 # windows does not have termios...
 try:
@@ -35,36 +39,68 @@ def interactive_shell(chan):
     else:
         windows_shell(chan)
 
+def get_term_env():
+    if not has_termios:
+        return {}
+    # Get the terminal size and type of the real terminal.
+    buf = array.array('h', [0, 0, 0, 0])
+    fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, buf, True)
+    env = {}
+    env['term'] = os.environ['TERM']
+    env['width'] = buf[1]
+    env['height'] = buf[0]
+    return env
+
+def set_size(chan):
+    # Get the terminal size of the real terminal, set it on the channel pty.
+    buf = array.array('h', [0, 0, 0, 0])
+    fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, buf, True)
+    chan.resize_pty(buf[1], buf[0])
+
 
 def posix_shell(chan):
     import select
     
+    class signal_winch:
+        def __init__(self, chan):
+            self.chan = chan
+        def __call__(self, signum, frame):
+            set_size(self.chan)
+
     oldtty = termios.tcgetattr(sys.stdin)
+    old_handler = signal.signal(signal.SIGWINCH, signal_winch(chan))
     try:
         tty.setraw(sys.stdin.fileno())
         tty.setcbreak(sys.stdin.fileno())
         chan.settimeout(0.0)
 
         while True:
-            r, w, e = select.select([chan, sys.stdin], [], [])
+            try:
+                r, w, e = select.select([chan, sys.stdin], [], [])
+            except select.error, e:
+                if e[0] == 4:   # Interrupted system call.
+                    continue
+
             if chan in r:
                 try:
                     x = chan.recv(1024)
                     if len(x) == 0:
                         print '\r\n*** EOF\r\n',
                         break
-                    sys.stdout.write(x)
-                    sys.stdout.flush()
+                    while x != '':
+                        n = os.write(sys.stdout.fileno(), x)
+                        x = x[n:]
                 except socket.timeout:
                     pass
             if sys.stdin in r:
-                x = sys.stdin.read(1)
+                x = os.read(sys.stdin.fileno(), 1)
                 if len(x) == 0:
                     break
                 chan.send(x)
 
     finally:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
+        signal.signal(signal.SIGWINCH, old_handler)
 
     
 # thanks to Mike Looijmans for this code
