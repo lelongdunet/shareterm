@@ -59,7 +59,14 @@ python $LIBDIR/access.py SHARESERV=$SHARESERV \
     NETUSER=$NETUSER \
     SSHKEYFILE=$SSHKEYFILE \
     'COMMAND=sudo -u shareterm /usr/share/shareterm/createlink' > /tmp/createlink.out
+
+ERR=$?
 source /tmp/createlink.out
+if [ ! "$ERR" == 0 ]; then
+    print $MSG
+    exit $ERR
+fi
+
 SSHPID=$CPID
 
 ################################################################################
