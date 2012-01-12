@@ -48,6 +48,7 @@ if [ -f $SSFILE ]; then
     exit 1
 fi
 
+rm -f $SSHKEYFILE
 #Create and send the key
 ssh-keygen -P '' -f $SSHKEYFILE
 sudo -u $GUESTUSERNAME mkdir -p $GUESTUSERHOME/.ssh
