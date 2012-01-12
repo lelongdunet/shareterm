@@ -2,6 +2,7 @@ import socket
 import select
 import SocketServer
 import threading
+import mutex
 
 import paramiko
 
@@ -84,6 +85,10 @@ class SSHRichClient(paramiko.SSHClient):
     """ Provide some additional features to the paramiko SSHClient
     Added methods allows to easily add port forwarding
     """
+    def __init__(self):
+        super(SSHRichClient, self).__init__()
+        self.forward_mutex = mutex.mutex()
+
     def local_forward_loop(self, local_port, remote_host, remote_port):
         # this is a little convoluted, but lets me configure things for the HandleLocal
         # object.  (SocketServer doesn't give Handlers any way to access the outer
@@ -102,6 +107,7 @@ class SSHRichClient(paramiko.SSHClient):
     def remote_forward_loop(self, server_port, remote_host, remote_port):
         transport = self.get_transport()
         transport.request_port_forward('', server_port)
+        self.forward_mutex.unlock()
         while True:
             chan = transport.accept(1000)
             if chan is None:
@@ -113,6 +119,8 @@ class SSHRichClient(paramiko.SSHClient):
     def remote_forward(self, server_port, remote_host, remote_port):
         thr = threading.Thread(target=self.remote_forward_loop, args=(server_port, remote_host, remote_port))
         thr.setDaemon(True)
-        thr.start()
+        def thr_start(thr):
+            thr.start()
+        self.forward_mutex.lock(thr_start, thr)
 
 
