@@ -12,7 +12,11 @@ system.
 
 DEPENDS (client side)
 ---------------------
-screen openssh-server sudo 
+python python-paramiko screen openssh-server sudo fluxbox vncserver xvncviewer
+------------------------------------------------------------------------------------------
+|> Recommanded install command under Ubuntu / Debian :
+|   apt-get install python python-paramiko openssh-server screen tightvncserver xtightvncviewer fluxbox
+------------------------------------------------------------------------------------------
 
 (server side)
 -------------
