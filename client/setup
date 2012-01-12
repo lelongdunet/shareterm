@@ -36,6 +36,7 @@ fi
 
 cp bin/* /usr/bin/
 cp lib/* $LIBDIR/
+cp -r skel $LIBDIR/
 
 #Ensure LIBDIR path is correct
 cd /usr/bin/

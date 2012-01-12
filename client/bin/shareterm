@@ -20,9 +20,11 @@
 #reverse tunnel is created and temporary private key is sent to server
 #to allow SSH connection as guest user
 
+LIBDIR='lib'
 SHARETERMCFG=$HOME/.shareterm
 if [ ! -f $SHARETERMCFG ]; then
     echo "You must set copnfiguration in $SHARETERMCFG"
+    echo "You can use $LIBDIR/skel/shareterm.none as an example"
     exit 1;
 fi
 
@@ -33,7 +35,6 @@ if [ -z $SSHPORT ]; then
     SSHPORT=22
 fi
 
-LIBDIR='lib'
 SCREENCFG=$LIBDIR/screenmu
 SSHKEYPATH=/tmp
 SSHKEYFILE=$SSHKEYPATH/k.shareterm
