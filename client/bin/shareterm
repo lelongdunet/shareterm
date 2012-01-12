@@ -58,6 +58,7 @@ python $LIBDIR/access.py SHARESERV=$SHARESERV \
     SSHPORT=$SSHPORT \
     NETUSER=$NETUSER \
     SSHKEYFILE=$SSHKEYFILE \
+    VNC_XID=$VNC_XID \
     'COMMAND=sudo -u shareterm /usr/share/shareterm/createlink' > /tmp/createlink.out
 
 ERR=$?

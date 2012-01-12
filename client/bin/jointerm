@@ -70,6 +70,14 @@ except Exception, e:
         pass
     sys.exit(1)
 
+#Get informations on ports
+stdin, stdout, stderr = client.exec_command(command + ' --info')
+ports = system.Config(stdout.readlines())
+
+if hasattr(ports, 'NEWGPORT') and hasattr(config, 'VNCVIEWPORT'):
+    logger.info('Forwarding %(view)s to %(dist)s' % {'view' : config.VNCVIEWPORT, 'dist' : ports.NEWGPORT})
+    client.local_forward(int(config.VNCVIEWPORT), 'localhost', int(ports.NEWGPORT))
+
 chan = client.get_transport().open_session()
 chan.get_pty(**interactive.get_term_env())
 chan.exec_command(command)

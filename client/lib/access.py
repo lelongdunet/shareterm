@@ -4,6 +4,7 @@ import paramiko
 import system
 
 cmdNetLink = "sudo -u shareterm /usr/share/shareterm/createlink"
+VNCBASEPORT = 5900
 
 config = system.Config(sys.argv[1:])
 hostname = config.SHARESERV
@@ -61,8 +62,14 @@ client.close()
 system.detach()
 client.connect(hostname, port, username)
 
-#Open remote connection
+logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWPORT'], 'l' : 22})
 client.remote_forward(params['NEWPORT'], 'localhost', 22)
+#Open remote connection
+vncport = int(config.VNC_XID)
+if vncport > 0:
+    vncport = vncport + VNCBASEPORT
+    logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWGPORT'], 'l' : vncport})
+    client.remote_forward(params['NEWGPORT'], 'localhost', vncport)
 
 while True:
     pass
