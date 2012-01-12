@@ -1,4 +1,19 @@
 import sys, os
+import logging
+
+def logFileHandler(filename, level):
+    logFile = logging.FileHandler(filename)
+    logFile.setLevel(level)
+    logFile.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    return logFile
+
+def logOutHandler(level):
+    logOut = logging.StreamHandler()
+    logOut.setLevel(level)
+    logOut.setFormatter(logging.Formatter('%(message)s'))
+    return logOut
+
+
 
 class Config:
     def __init__(self, argList):

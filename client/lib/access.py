@@ -14,7 +14,14 @@ password = ''
 if hasattr(config, 'COMMAND'):
     cmdNetLink = config.COMMAND
 
-paramiko.util.log_to_file('/tmp/shareterm.log')
+import logging
+logging.basicConfig(filename='/tmp/shareterm.log',level=logging.DEBUG)
+paramiko.util.log_to_file('/tmp/shareterm_ssh.log')
+
+def printError(msg):
+    print 'MSG=%s' % msg
+    logging.error(msg)
+
 
 #Try to connect to the server
 try:
@@ -23,7 +30,7 @@ try:
     client.set_missing_host_key_policy(paramiko.WarningPolicy)
     client.connect(hostname, port, username)
 except Exception, e:
-    print 'MSG="Can\'t connect to server : %s: %s"' % (e.__class__, e)
+    printError("Can\'t connect to server : %s: %s" % (e.__class__, e))
     try:
         client.close()
     except:
@@ -36,7 +43,8 @@ try:
     pkey = fkey.read()
     fkey.close()
 except Exception, e:
-    print 'MSG="Error while sending key : %s: %s"' % (e.__class__, e)
+    printError('Error while sending key : %s: %s' % (e.__class__, e))
+    sys.exit(2)
 
 stdin, stdout, stderr = client.exec_command(cmdNetLink)
 stdin.write(pkey)

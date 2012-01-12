@@ -26,6 +26,12 @@ import system
 import sshrichclient
 import paramiko
 import interactive
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(system.logFileHandler('/tmp/shareterm.log', logging.DEBUG))
+logger.addHandler(system.logOutHandler(logging.INFO))
 
 
 SHARETERMCFG = os.environ['HOME'] + '/.shareterm'
@@ -49,7 +55,7 @@ if hasattr(config, 'SSHPORT'):
 else:
     port = 22
 
-print "Connecting to %s's terminal" % TARGET_USER
+logger.info("Connecting to %s's terminal" % TARGET_USER)
 #Try to connect to the server
 try:
     client = sshrichclient.SSHRichClient()
@@ -57,7 +63,7 @@ try:
     client.set_missing_host_key_policy(paramiko.WarningPolicy)
     client.connect(hostname, port, username)
 except Exception, e:
-    print 'MSG="Can\'t connect to server : %s: %s"' % (e.__class__, e)
+    logger.error('Can\'t connect to server : %s: %s' % (e.__class__, e))
     try:
         client.close()
     except:
