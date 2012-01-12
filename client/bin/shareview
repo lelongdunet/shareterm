@@ -16,29 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#Install script on target PC
+#Start a shared terminal (using a screen session) on target PC
+#reverse tunnel is created and temporary private key is sent to server
+#to allow SSH connection as guest user
 
-GUESTUSERNAME=guest
-
-chmod u+s /usr/bin/screen
-chmod 755 /var/run/screen
-
-if ! grep $GUESTUSERNAME /etc/passwd; then
-    useradd -m -s /usr/bin/screenshell $GUESTUSERNAME
+LIBDIR='lib'
+SHARETERMCFG=$HOME/.shareterm
+if [ ! -f $SHARETERMCFG ]; then
+    echo "You must set copnfiguration in $SHARETERMCFG"
+    echo "You can use $LIBDIR/skel/shareterm.none as an example"
+    exit 1;
 fi
 
-LIBDIR=/var/lib/shareterm
-mkdir -p $LIBDIR
+source $SHARETERMCFG
 
-if ! grep $GUESTUSERNAME /etc/sudoers; then
-    echo 'ALL ALL=('$GUESTUSERNAME') NOPASSWD: ALL' >> /etc/sudoers
-fi
-
-cp bin/* /usr/bin/
-cp lib/* $LIBDIR/
-cp -r skel $LIBDIR/
-
-#Ensure LIBDIR path is correct
-cd /usr/bin/
-sed -i "s#^LIBDIR\s*=.*#LIBDIR='$LIBDIR'#" shareterm jointerm shareview
+xvncviewer localhost:$VNCVIEWPORT
 

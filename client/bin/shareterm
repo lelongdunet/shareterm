@@ -39,6 +39,9 @@ SCREENCFG=$LIBDIR/screenmu
 SSHKEYPATH=/tmp
 SSHKEYFILE=$SSHKEYPATH/k.shareterm
 SSFILE=$SSHKEYPATH/ss.shareterm
+VNCLOG=/tmp/sharetermvnc.log
+VNCPWFILE="$HOME/.vnc/passwd"
+VNCSTARTUP="$HOME/.vnc/xstartup"
 
 GUESTUSERNAME=guest
 GUESTUSERHOME=/home/$GUESTUSERNAME
@@ -69,6 +72,25 @@ if [ ! "$ERR" == 0 ]; then
 fi
 
 SSHPID=$CPID
+echo "SSH running in PID : $SSHPID"
+
+################################################################################
+# Start the VNC server if available
+################################################################################
+
+if [ ! -f "$VNCSTARTUP" ]; then
+    cp $LIBDIR/skel/xstartup "$VNCSTARTUP"
+fi
+
+#netstat -vtln|grep ":$VNCPORT"
+if [ "$VNCMODE" == "window" ] ; then
+    tightvncserver -depth $VNCDEPTH -geometry $VNCGEOMETRY :$VNC_XID
+    if [ "$VNCOPEN" == "true" ]; then
+        xtightvncviewer -passwd "$VNCPWFILE" localhost:$VNC_XID &>> "$VNCLOG" &
+    fi
+    export DISPLAY=:$VNC_XID
+fi
+
 
 ################################################################################
 # Start or resume the screen session
@@ -101,6 +123,11 @@ fi
 ################################################################################
 # Close the tunnel
 ################################################################################
+
+if ! screen -ls |egrep '^\s*[0-9]+\.share\b'>/tmp/screenss; then
+    echo "Screen session has stopped : Stop vncserver as well."
+    vncserver -kill :$VNC_XID
+fi
 
 echo 'Closing shared terminal'
 sleep 1
