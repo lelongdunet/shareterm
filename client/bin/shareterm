@@ -40,8 +40,9 @@ SSHKEYPATH=/tmp
 SSHKEYFILE=$SSHKEYPATH/k.shareterm
 SSFILE=$SSHKEYPATH/ss.shareterm
 VNCLOG=/tmp/sharetermvnc.log
-VNCPWFILE="$HOME/.vnc/passwd"
-VNCSTARTUP="$HOME/.vnc/xstartup"
+VNCCFGDIR="$HOME/.vnc"
+VNCPWFILE="$VNCCFGDIR/passwd"
+VNCSTARTUP="$VNCCFGDIR/xstartup"
 
 GUESTUSERNAME=guest
 GUESTUSERHOME=/home/$GUESTUSERNAME
@@ -79,11 +80,16 @@ echo "SSH running in PID : $SSHPID"
 ################################################################################
 
 if [ ! -f "$VNCSTARTUP" ]; then
+    mkdir -p "$VNCCFGDIR"
     cp $LIBDIR/skel/xstartup "$VNCSTARTUP"
 fi
 
 #netstat -vtln|grep ":$VNCPORT"
 if [ "$VNCMODE" == "window" ] ; then
+    if [ ! -f "$VNCSTARTUP" ]; then
+        echo "Error : '$VNCSTARTUP' could not be created!"
+        exit 3
+    fi
     tightvncserver -depth $VNCDEPTH -geometry $VNCGEOMETRY :$VNC_XID
     if [ "$VNCOPEN" == "true" ]; then
         xtightvncviewer -passwd "$VNCPWFILE" localhost:$VNC_XID &>> "$VNCLOG" &
