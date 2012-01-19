@@ -1,0 +1,12 @@
+#!/bin/bash
+#Go to script dir
+shdir=`echo $0|sed -e 's/\/[^\/]*$//'`
+echo "cd to $shdir/../.."
+cd "$shdir/../.."
+
+#SUDO emulation
+export SUDO_USER=none
+export SUDO_UID=2000
+
+./server/bin/createlink
+

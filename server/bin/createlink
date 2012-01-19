@@ -67,14 +67,12 @@ def toFile(filename, text, mode='w'):
     file.write(text)
     file.close()
 
-targetUser = "none"
-targetUID = 0
 try:
     targetUser = os.environ["SUDO_USER"]
     targetUID = os.environ["SUDO_UID"]
 except:
     print "The script must be called via sudo"
-    #exit(1)
+    exit(1)
 
 configFileName = 'server.setenv.bash'
 if not os.path.exists(configFileName):
