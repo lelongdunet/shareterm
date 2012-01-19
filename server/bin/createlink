@@ -87,9 +87,30 @@ config = Config(configFileName, [("TARGET_USER", targetUser)])
 if not os.path.exists(config.KEYDIR):
     os.mkdir(config.KEYDIR)
 
+#Get and analyze input
+endRE = re.compile("^----*END\s.*--$")
+beginRE = re.compile("^----*BEGIN\s.*--$")
+
+
+endRE = re.compile("^----*END\s.*--$")
+beginRE = re.compile("^----*BEGIN\s.*--$")
+affectRE = re.compile("^\w*\s*=")
+
+
+inLines = sys.stdin.readlines()
+if not beginRE.match(inLines[0]):
+    print 'Bad input format'
+    exit(3)
+
+lineCount = 0
+for l in inLines:
+    lineCount = lineCount + 1
+    if endRE.match(l):
+        break
+
 #Write private key
 keyFile = open(config.KEYFILE, 'w')
-keyFile.writelines(sys.stdin.readlines())
+keyFile.writelines(inLines[:lineCount])
 keyFile.close()
 
 os.chmod(config.KEYFILE, stat.S_IRUSR | stat.S_IWUSR)
@@ -100,8 +121,16 @@ startPort = int(targetUID) + 10000
 newPort = tcpPortList.getFreePort(startPort)
 newGPort = tcpPortList.getFreePort(startPort)
 
-toFile(config.PORTFILE, 'NEWPORT=%i\n' % newPort)
-toFile(config.PORTFILE, 'NEWGPORT=%i\n' % newGPort, 'a')
+portFileObject = open(config.PORTFILE, 'w')
+portFileObject.write('NEWPORT=%i\n' % newPort)
+portFileObject.write('NEWGPORT=%i\n' % newGPort)
 print "NEWPORT=" + str(newPort) + '\n'
 print "NEWGPORT=" + str(newGPort) + '\n'
+
+#Store received parameters after ports
+for l in inLines[lineCount:]:
+    if affectRE.match(l):
+        portFileObject.write(l)
+
+portFileObject.close()
 
