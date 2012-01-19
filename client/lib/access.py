@@ -65,7 +65,12 @@ client.connect(hostname, port, username)
 logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWPORT'], 'l' : 22})
 client.remote_forward(params['NEWPORT'], 'localhost', 22)
 #Open remote connection
-vncport = int(config.VNC_XID)
+try:
+    vncport = int(config.VNC_XID)
+except:
+    logging.warning('No valid VNC X session number provided.')
+    vncport = 0
+
 if vncport > 0:
     vncport = vncport + VNCBASEPORT
     logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWGPORT'], 'l' : vncport})
