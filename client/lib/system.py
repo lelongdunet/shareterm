@@ -1,5 +1,6 @@
 import sys, os
 import logging
+import binascii
 
 def logFileHandler(filename, level):
     logFile = logging.FileHandler(filename)
@@ -13,7 +14,11 @@ def logOutHandler(level):
     logOut.setFormatter(logging.Formatter('%(message)s'))
     return logOut
 
+def myEncod(s):
+    return binascii.b2a_base64(s).replace('=', ':')
 
+def myDecod(s):
+    return binascii.a2b_base64(s.replace(':', '='))
 
 class Config:
     def __init__(self, argList):
