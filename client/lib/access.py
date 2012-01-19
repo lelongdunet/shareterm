@@ -60,10 +60,15 @@ client.close()
 
 #Then detach the process, the tunnel is kept open
 system.detach()
+
 client.connect(hostname, port, username)
 
 logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWPORT'], 'l' : 22})
-client.remote_forward(params['NEWPORT'], 'localhost', 22)
+try:
+    client.remote_forward(params['NEWPORT'], 'localhost', 22)
+except:
+    logging.error('Error while forwarding SSH port')
+
 #Open remote connection
 try:
     vncport = int(config.VNC_XID)
@@ -71,10 +76,13 @@ except:
     logging.warning('No valid VNC X session number provided.')
     vncport = 0
 
-if vncport > 0:
-    vncport = vncport + VNCBASEPORT
-    logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWGPORT'], 'l' : vncport})
-    client.remote_forward(params['NEWGPORT'], 'localhost', vncport)
+try:
+    if vncport > 0:
+        vncport = vncport + VNCBASEPORT
+        logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWGPORT'], 'l' : vncport})
+        client.remote_forward(params['NEWGPORT'], 'localhost', vncport)
+except:
+    logging.error('Error while forwarding VNC port')
 
 while True:
     pass
