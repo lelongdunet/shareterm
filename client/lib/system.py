@@ -20,6 +20,15 @@ def myEncod(s):
 def myDecod(s):
     return binascii.a2b_base64(s.replace(':', '='))
 
+def toFile(filename, text, mode='w'):
+    print 'Open\n'
+    f = open(filename, mode)
+    print 'Read\n'
+    f.write(text)
+    print 'Close\n'
+    f.close()
+    print 'closed\n'
+
 class Config:
     def __init__(self, argList):
         for l in argList:

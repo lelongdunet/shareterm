@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import sshrichclient
 import paramiko
 import system
@@ -47,8 +47,20 @@ except Exception, e:
     printError('Error while sending key : %s: %s' % (e.__class__, e))
     sys.exit(2)
 
+try:
+    fvncpw = open(os.path.expanduser('~/.vnc/passwd'))
+    vncpw64 = system.myEncod(fvncpw.read())
+    fvncpw.close()
+    logging.info('VNC password encoded: %s' % vncpw64)
+except Exception, e:
+    logging.warning('No VNC password available. : %s: %s' % (e.__class__, e))
+
 stdin, stdout, stderr = client.exec_command(cmdNetLink)
-stdin.write(pkey)
+stdin.write(pkey + '\n')
+try:
+    stdin.write('VNCPW=%s\n' % vncpw64)
+except:
+    pass
 stdin.channel.shutdown_write()
 params = {}
 for l in stdout:

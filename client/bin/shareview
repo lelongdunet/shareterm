@@ -39,5 +39,9 @@ if [ -n "$VNCQUALITY" ]; then
     VNCARGS+=" -quality $VNCQUALITY"
 fi
 
+if [ -f "$TMP_VNCPW_FILE" ]; then
+    VNCARGS+=" -passwd $TMP_VNCPW_FILE"
+fi
+
 xtightvncviewer $VNCARGS localhost:$VNCVIEWPORT
 
