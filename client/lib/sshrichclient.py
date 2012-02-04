@@ -6,6 +6,8 @@ import mutex
 
 import paramiko
 
+import logging
+
 #Generic functions
 def verbose(s):
     try:
@@ -13,6 +15,7 @@ def verbose(s):
             print s
     except:
         pass
+    logging.info(s)
 
 #Local port forwarding
 class ForwardServer (SocketServer.ThreadingTCPServer):
@@ -54,41 +57,56 @@ class HandleLocal (SocketServer.BaseRequestHandler):
         verbose('Tunnel closed from %r' % (self.request.getpeername(),))
         self.request.close()
 
-def handleRemote(chan, host, port):
-    sock = socket.socket()
-    try:
-        sock.connect((host, port))
-    except Exception, e:
-        verbose('Forwarding request to %s:%d failed: %r' % (host, port, e))
-        return
-    
-    verbose('Connected!  Tunnel open %r -> %r -> %r' % (chan.origin_addr,
-                                                        chan.getpeername(), (host, port)))
-    while True:
-        r, w, x = select.select([sock, chan], [], [])
-        if sock in r:
-            data = sock.recv(1024)
-            if len(data) == 0:
-                break
-            chan.send(data)
-        if chan in r:
-            data = chan.recv(1024)
-            if len(data) == 0:
-                break
-            sock.send(data)
-    chan.close()
-    sock.close()
-    verbose('Tunnel closed from %r' % (chan.origin_addr,))
+class HandleRemote:
+    def __init__(self):
+        self.port_assoc = {}
+
+    def assoc(self, server_port, remote_host, remote_port):
+        self.port_assoc[int(server_port)] = (remote_host, remote_port)
+
+    def __call__(self, chan, origin, server):
+        try:
+            server_port = int(server[1])
+            dest_host = self.port_assoc[server_port]
+        except:
+            verbose('Forwarding from %r failed (available assoc are %r)' % (server,self.port_assoc))
+            chan.close()
+            return
+        verbose('Forwarding %r to %r.' % (server, dest_host))
+        thr = threading.Thread(target=self.loop, args=(chan, dest_host))
+        thr.start()
+
+    def loop(self, chan, dest_host):
+        sock = socket.socket()
+        try:
+            sock.connect(dest_host)
+        except Exception, e:
+            verbose('Forwarding request to %r failed: %s, %s' % (dest_host, e.__class__, e))
+            chan.close()
+            return
+
+        verbose('Connected!  Tunnel open %r -> %r' % (chan.getpeername(), dest_host))
+        while True:
+            r, w, x = select.select([sock, chan], [], [])
+            if sock in r:
+                data = sock.recv(1024)
+                if len(data) == 0:
+                    break
+                chan.send(data)
+            if chan in r:
+                data = chan.recv(1024)
+                if len(data) == 0:
+                    break
+                sock.send(data)
+        chan.close()
+        sock.close()
+        verbose('Tunnel closed from %r' % (chan.origin_addr,))
 
 
 class SSHRichClient(paramiko.SSHClient):
     """ Provide some additional features to the paramiko SSHClient
     Added methods allows to easily add port forwarding
     """
-    def __init__(self):
-        super(SSHRichClient, self).__init__()
-        self.forward_mutex = mutex.mutex()
-
     def local_forward_loop(self, local_port, remote_host, remote_port):
         # this is a little convoluted, but lets me configure things for the HandleLocal
         # object.  (SocketServer doesn't give Handlers any way to access the outer
@@ -104,23 +122,11 @@ class SSHRichClient(paramiko.SSHClient):
         thr.setDaemon(True)
         thr.start()
 
-    def remote_forward_loop(self, server_port, remote_host, remote_port):
-        transport = self.get_transport()
-        transport.request_port_forward('', server_port)
-        self.forward_mutex.unlock()
-        while True:
-            chan = transport.accept(1000)
-            if chan is None:
-                continue
-            thr = threading.Thread(target=handleRemote, args=(chan, remote_host, remote_port))
-            thr.setDaemon(True)
-            thr.start()
-
     def remote_forward(self, server_port, remote_host, remote_port):
-        thr = threading.Thread(target=self.remote_forward_loop, args=(server_port, remote_host, remote_port))
-        thr.setDaemon(True)
-        def thr_start(thr):
-            thr.start()
-        self.forward_mutex.lock(thr_start, thr)
+        if(not hasattr(self, 'handleRemote')):
+            self.handleRemote = HandleRemote()
+        self.handleRemote.assoc(server_port, remote_host, remote_port)
+        transport = self.get_transport()
+        transport.request_port_forward('', server_port, self.handleRemote)
 
 
