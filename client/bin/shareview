@@ -32,12 +32,12 @@ source $SHARETERMCFG
 
 VNCARGS=''
 if [ -n "$VNCENCOD" ]; then
-    VNCARGS="$VNCARGS -encodings $VNCENCOD"
+    VNCARGS+=" -encodings $VNCENCOD"
 fi
 
 if [ -n "$VNCQUALITY" ]; then
-    VNCARGS="$VNCARGS -quality $VNCQUALITY"
+    VNCARGS+=" -quality $VNCQUALITY"
 fi
 
-xvncviewer $VNCARGS localhost:$VNCVIEWPORT
+xtightvncviewer $VNCARGS localhost:$VNCVIEWPORT
 
