@@ -66,14 +66,14 @@ client.connect(hostname, port, username)
 logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWPORT'], 'l' : 22})
 try:
     client.remote_forward(params['NEWPORT'], 'localhost', 22)
-except:
-    logging.error('Error while forwarding SSH port')
+except Exception, e:
+    logging.error('Error while forwarding SSH port %s, %s' % (e.__class__, e))
 
 #Open remote connection
 try:
     vncport = int(config.VNC_XID)
-except:
-    logging.warning('No valid VNC X session number provided.')
+except Exception, e:
+    logging.warning('No valid VNC X session number provided. %s, %s' % (e.__class__, e))
     vncport = 0
 
 try:
@@ -81,8 +81,8 @@ try:
         vncport = vncport + VNCBASEPORT
         logging.info('Remote forward %(r)s to %(l)i', {'r' : params['NEWGPORT'], 'l' : vncport})
         client.remote_forward(params['NEWGPORT'], 'localhost', vncport)
-except:
-    logging.error('Error while forwarding VNC port')
+except Exception, e:
+    logging.error('Error while forwarding VNC port %s, %s' % (e.__class__, e))
 
 while True:
     pass
