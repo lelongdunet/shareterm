@@ -1,4 +1,5 @@
 # Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
+# Copyright (C) 2012  Adrien Lelong <contact@lelongdunet.com>
 #
 # This file is part of paramiko.
 #
